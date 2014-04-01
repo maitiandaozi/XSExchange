@@ -7,6 +7,7 @@ class console {
 	protected $id 		= null;
 	protected $key		= null;
 	protected $postion	= null;
+	protected $process  = array();
 
 	public function __construct($key = null, $id = null)
     {
@@ -28,16 +29,14 @@ class console {
 		if(!is_array($structs) || empty($structs))
 			return false;
 
-		$res 	 = $this->dealData($data);
-
-		$handles = $this->createProcess($res);
-
+		$res = $this->dealData($data);
+		$this->doProcess($res);
 	}
 
-	public function createProcess($data) 
+	public function doProcess($data) 
 	{
-		$num = count($data);
-
+		$num 	= count($data);
+        
 		for($i = 0 ; $i < $num; $i++) {
 
 		}
@@ -64,7 +63,7 @@ class console {
 			if(count($v) != 2) {
 				return array();
 			}
-			$return[$v[0]] 	= $v[0];
+			$return[$v[0]] 	= 1;
 			$sort[$v[1]]	= $v[0];
 		}
 

@@ -1,17 +1,20 @@
 <?php
-class XSExchange {
+class XSEXchange {
 
     protected $xs    = null;
+    protected $key   = null;
     protected $id    = 885;
     protected $perms = 0644;
     protected $limit = 3;
     protected $sign  = "XSEX";
 
-    public function __construct($id = null)
+    public function __construct($id = null, $key = null)
     {
-        if($id) {
+        if($id)
             $this->id = $id;
-        }
+
+        if($key)
+            $this->key = $key;
     }
 
     public function exists($id)
@@ -21,7 +24,8 @@ class XSExchange {
         return $status;
     }
 
-    public function setLimit($num = 10) {
+    public function setLimit($num = 10) 
+    {
         $this->limit = $num;
     }
 
@@ -44,7 +48,8 @@ class XSExchange {
         return true;
     }
 
-    public function removeProcess($num = 1) {
+    public function removeProcess($num = 1) 
+    {
         $data = $this->_getContent($this->limit);
         if($data == -1) {
             return false;
@@ -59,11 +64,16 @@ class XSExchange {
         $this->_writeConent($data);
 
         return true;
-
     }
 
-    protected function _add($data) {
+    public function readProcess() 
+    {
+        $data = $this->_getContent($this->limit);
+        return $data;
+    }
 
+    protected function _add($data) 
+    {
         $num = $this->_check($data);
 
         if($num === -1) {
@@ -82,7 +92,8 @@ class XSExchange {
         return $data;
     }
 
-    protected function _remove($data) {
+    protected function _remove($data) 
+    {
         if(strlen($data) == 0) {
             return -1;
         }
@@ -95,6 +106,7 @@ class XSExchange {
         $same = null;
         $sum  = count($result);
         for($i = 0; $i < $sum; $i++) {
+
             $v = explode(":", $result[$i]);
             if(!$same) {
                 $same = $v[0];
@@ -112,8 +124,9 @@ class XSExchange {
         return implode(";", $result);
     }
 
-    protected function _check($data) {
-        if(strlen($data) + 15* $this->limit > 2014) {
+    protected function _check($data) 
+    {
+        if(strlen($data) + 15* $this->limit > 1024) {
             return -1;
         }
 
@@ -127,23 +140,25 @@ class XSExchange {
         return $v[0];
     }
 
-    protected function _writeConent($data) {
-
-
+    protected function _writeConent($data) 
+    {
         if($this->exists($this->id)) {
+
             shmop_delete($this->xs);
             shmop_close($this->xs);
         }
 
         if(strlen($data) > 0) {
-            $data = "XSEX" . $this->id . "-" . $data;
+
+            $data = "XSEX" . $this->key . "-" . $data;
             $size = strlen($data);
             $this->shmid = shmop_open($this->id, "c", $this->perms, $size);
             shmop_write($this->shmid, $data, 0);
         }
     }
 
-    protected function _getContent($weight) {
+    protected function _getContent($weight)
+    {
         if($weight != $this->limit)
             $this->setLimit($weight);
 
@@ -152,22 +167,28 @@ class XSExchange {
             $this->xs  = shmop_open($this->id, "a", 0, 0);
             $size      = @shmop_size($this->xs);
             $data = "";
+
             if($size && $size > 0)  {
+
                 $data = shmop_read($this->xs, 0, $size);
                 $data = $this->isvilidate($data);
             }
+
         } else {
+
             $data = "";
         }
 
         return $data;
     }
 
-    protected function isvilidate($data) {
+    protected function isvilidate($data) 
+    {
         $result = explode("-", $data);
-        if(count($result) == 2 && $result[0] == "XSEX" . $this->id) {
+
+        if(count($result) == 2 && $result[0] == "XSEX" . $this->key) 
             return $result[1];
-        }
+
         return -1;
     }
 
